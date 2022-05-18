@@ -32,7 +32,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final TextEditingController textFieldController = TextEditingController();
+  final TextEditingController ADnameController = TextEditingController();
+  final TextEditingController ADpriceController = TextEditingController();
+  final TextEditingController ADquantityController = TextEditingController();
   final TextEditingController searchBarController = TextEditingController();
   List<Product> shoppingCart = [];
   List<Product> favouriteItems = [];
@@ -51,7 +53,8 @@ class _MyHomePageState extends State<MyHomePage> {
     if (inputString.isEmpty) {
       filteredProducts = shoppingCart;
     } else {
-      setState(() { //clear editing controller
+      setState(() {
+        //clear editing controller
         filteredProducts = shoppingCart
             .where((item) =>
                 item.name.toLowerCase().contains(inputString.toLowerCase()))
@@ -59,6 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     }
   }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -181,17 +185,33 @@ class _MyHomePageState extends State<MyHomePage> {
               "Add a new product to your list",
               textAlign: TextAlign.center,
             ),
-            content: TextField(
-              controller: textFieldController,
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              //position
+              mainAxisSize: MainAxisSize.min,
+              // wrap content in flutter
+              children: <Widget>[
+                Text("Name"),
+                TextField(controller: ADnameController),
+                Text("Price"),
+                TextField(controller: ADpriceController),
+                Text("Quantity"),
+                TextField(controller: ADquantityController),
+              ],
             ),
+            /*TextField(
+              controller: textFieldController,*/
+
             actions: [
               TextButton(
                 onPressed: () {
                   // print(textFieldController.text);
-                  if (textFieldController.text.trim() != "")
+                  if (ADnameController.text.trim() != "" && ADpriceController.text.isNotEmpty)
                     setState(() {
-                      shoppingCart.add(Product(name: textFieldController.text));
-                      textFieldController.clear();
+                      shoppingCart.add(Product(name: ADnameController.text, price: double.parse(ADpriceController.text), quantity: int.parse(ADquantityController.text)));
+                      ADnameController.clear();
+                      ADpriceController.clear();
+                      ADquantityController.clear();
                     });
 
                   Navigator.of(context).pop();
