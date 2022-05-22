@@ -7,7 +7,6 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -30,16 +29,17 @@ class MyHomePage extends StatefulWidget {
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
-
+List<Product> favouriteItems = [];
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController ADnameController = TextEditingController();
   final TextEditingController ADpriceController = TextEditingController();
   final TextEditingController ADquantityController = TextEditingController();
   final TextEditingController searchBarController = TextEditingController();
   List<Product> shoppingCart = [];
-  List<Product> favouriteItems = [];
+
   List<Product> filteredProducts = [];
   int _selectedIndex = 0;
+
 
   @override
   void initState() {
@@ -64,6 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _onItemTapped(int index) {
+    print(_selectedIndex);
     setState(() {
       _selectedIndex = index;
     });
@@ -73,9 +74,9 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: _selectedIndex == 1 ? Text("Favourite products") :Text(widget.title),
       ),
-      body: Center(
+      body: _selectedIndex == 1 ? FavouritesList() : Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
@@ -131,12 +132,17 @@ class _MyHomePageState extends State<MyHomePage> {
                       key: Key(item.name),
                       onDismissed: (DismissDirection direction) {
                         if (direction == DismissDirection.startToEnd) {
-                          favouriteItems.add(filteredProducts[index]);
+                          setState(() {
+                            favouriteItems.add(filteredProducts[index]);
+                          });
+
                           //print(favouriteItems);
                         }
-                        setState(() {
-                          filteredProducts.removeAt(index);
-                        });
+
+                          setState(() {
+                            filteredProducts.removeAt(index);
+                          });
+
                         ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('$item dismissed')));
                       },
@@ -170,7 +176,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
+        selectedItemColor: Colors.amber,
         onTap: _onItemTapped,
       ),
     );
@@ -199,16 +205,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 TextField(controller: ADquantityController),
               ],
             ),
-            /*TextField(
-              controller: textFieldController,*/
-
             actions: [
               TextButton(
                 onPressed: () {
                   // print(textFieldController.text);
-                  if (ADnameController.text.trim() != "" && ADpriceController.text.isNotEmpty)
+                  if (ADnameController.text.trim() != "" &&
+                      ADpriceController.text.isNotEmpty)
                     setState(() {
-                      shoppingCart.add(Product(name: ADnameController.text, price: double.parse(ADpriceController.text), quantity: int.parse(ADquantityController.text)));
+                      shoppingCart.add(Product(
+                          name: ADnameController.text,
+                          price: double.parse(ADpriceController.text),
+                          quantity: int.parse(ADquantityController.text)));
                       ADnameController.clear();
                       ADpriceController.clear();
                       ADquantityController.clear();
@@ -235,5 +242,67 @@ class _MyHomePageState extends State<MyHomePage> {
       // if (inCart)
       shoppingCart.remove(product);
     });
+  }
+}
+
+class FavouritesList extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.all(15),
+                child: Row(
+                  children: <Widget>[
+                    Icon(Icons.favorite_rounded),
+                    Text(
+                      "Favourite Products",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.amber,
+                        fontSize: 25,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                    itemCount: favouriteItems.length,
+                    itemBuilder: (context, index) {
+                      final item = favouriteItems[index];
+                      return Dismissible(
+                        key: Key(item.name),
+                        onDismissed: (DismissDirection direction) {
+                          if (direction == DismissDirection.startToEnd) {
+                            favouriteItems.add(favouriteItems[index]);
+                            //print(favouriteItems);
+                          }
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('$item dismissed')));
+                        },
+                        background: Container(color: Colors.green),
+                        secondaryBackground: Container(color: Colors.red),
+                        child: ShoppingListItem(
+                          product: favouriteItems[index],
+                          inCart:
+                          favouriteItems.contains(favouriteItems[index]),
+                          onCartChanged: onCartChanged,
+                        ),
+                      );
+                    }),
+              )
+            ]
+        ),
+      ),
+    );
+  }
+  void onCartChanged(Product product, bool inCart) {
+      // if (!inCart) shoppingCart.add(product);
+      // if (inCart)
+      favouriteItems.remove(product);
+
   }
 }
